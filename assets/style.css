@@ -1,11 +1,12 @@
-.stage{
+.stage {
     width: 50%;
     top: 25%;
     margin: auto;
     border: 10px solid silver;
+    position: relative;
 }
 
-.startBtn{
+.startBtn {
     background: aquamarine;
     color: #fff;
     text-shadow: 1px 1px 1px #000;
@@ -20,4 +21,13 @@
     line-height: 50px;
     text-align: center;
     vertical-align: middle;
+}
+
+.ring {
+    width: 20px;
+    height: 20px;
+    background: #00637f;
+    border: 2px solid #003366;
+    position: absolute;
+    box-sizing: border-box
 }
