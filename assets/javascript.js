@@ -6,15 +6,65 @@ $(document).ready(function(){
             stage: null,
 
             ring: null,
+            
+            engine: null,
 
             configs: {
                 width: 20,
                 height: 20
             },
+            
+            direction: {
+                'top': -20,
+                'left': 0
+            },
+            
+            lastKeyCode: 38,
 
             init: function(){
-                $('body').html('');
-                this.buildStage()
+                $('body').html('').keypress(this.setEventListeners(this));
+                this.buildStage();
+            },
+            
+            setEventListeners: function (self){
+                return function(e){
+                    var top, left;
+                    switch(e.keyCode){
+                        case 38:
+                            if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
+                                top = -1 * self.configs.height;
+                                left = 0;
+                            }
+                            break;
+                        case 37:
+                            if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
+                                top = 0;
+                                left = -1 * self.configs.width;
+                            }
+                            break;
+                        case 40:
+                            if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
+                                top = self.configs.height;
+                                left = 0;
+                            }
+                            break
+                        case 39:
+                            if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
+                                top = 0;
+                                left = self.configs.width;
+                            }
+                            break;
+                    }
+                    self.lastKeyCode = e.keyCode;
+                    
+                    if (top || left){
+                        self.direction = {
+                            top: top,
+                            left: left
+                        };
+                        self.restartTheEngine();
+                    }
+                }
             },
             
             buildStage: function (){
@@ -33,17 +83,30 @@ $(document).ready(function(){
                     }, 400, function(){
                         $(this).remove();
                         self.startTheGame();
-                    })
+                    });
                 });
             },
 
             startTheGame: function(){
-                this.addRing(3);
+                this.addRing(4);
+                var self = this;
+                this.engine = setInterval(function(){self.run()}, 500);
+            },
+            
+            stopTheGame: function(){
+                clearInterval(this.engine);
+                alert('You loose');
+            },
+            
+            restartTheEngine: function(){
+                clearInterval(this.engine);
+                var self = this;
+                this.engine = setInterval(function(){self.run()}, 500);
             },
 
             addRing: function(n){
                 var ring;
-                if (this.ring == null){
+                if (this.ring === null){
                     this.ring = $('<div class="ring"></div>');
                 }
                 for (;n>0;n--) {
@@ -75,7 +138,7 @@ $(document).ready(function(){
                 }
                 var snakeLength = this.snake.length;
                 if (snakeLength) {
-                    var lastRing = this.snake[snakeLength-1].position;
+                    var lastRing = this.snake[snakeLength-1].position();
                 } else {
                     var lastRing = {
                         left: parseInt((this.stage.width() - this.configs.width*2)/2),
@@ -97,7 +160,7 @@ $(document).ready(function(){
                     var lastRing = this.snake[snakeLength-1].position();
                     if (snakeLength>1){
                         var preLastRing = this.snake[snakeLength-2].position();
-                        if (lastRing.left == preLastRing.left){
+                        if (lastRing.left === preLastRing.left){
                             if (lastRing.top<preLastRing.top){
                                 direction = 'up';
                             }
@@ -111,8 +174,50 @@ $(document).ready(function(){
                     }
                 }
                 return direction;
+            },
+            
+            run: function(){
+                var ring, ringPosition, lastPosition, newPosition, stopTheGame = 0;
+                for(var n = 0, l = this.snake.length; n<l; n++)
+                {
+                    ring = this.snake[n];
+                    ringPosition = ring.position();
+                    if (n){
+                        newPosition = lastPosition;
+                    } else {
+                        newPosition = {
+                            'left' : ringPosition.left + this.direction.left,
+                            'top' : ringPosition.top + this.direction.top
+                        };
+                        if (newPosition.left<0){
+                            newPosition.left = 0;
+                            stopTheGame = true;
+                        }
+                        
+                        if (newPosition.top<0) {
+                            newPosition.top = 0;
+                            stopTheGame = true;
+                        }
+                        
+                        if (newPosition.top+this.configs.height > this.stage.height()){
+                            newPosition.top = this.stage.height() - this.configs.height;
+                            stopTheGame = true;
+                        }
+                        
+                        if (newPosition.left+this.configs.width > this.stage.width()){
+                            newPosition.left = this.stage.width() - this.configs.width;
+                            stopTheGame = true;
+                        }
+                    }
+
+                    ring.css(newPosition);
+                    lastPosition = ringPosition;
+                }
+                if (stopTheGame) {
+                    this.stopTheGame();
+                }   
             }
-        }
+        };
     };
     var game = new Snake();
     game.init();
