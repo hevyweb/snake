@@ -22,10 +22,13 @@ $(document).ready(function(){
             lastKeyCode: 38,
 
             init: function(){
-                $('body').html('').keypress(this.setEventListeners(this));
+                $('body').html('');
+                $(window).keydown(this.setEventListeners(this));
                 this.buildStage();
             },
-            
+
+
+
             setEventListeners: function (self){
                 return function(e){
                     var top, left;
@@ -47,7 +50,7 @@ $(document).ready(function(){
                                 top = self.configs.height;
                                 left = 0;
                             }
-                            break
+                            break;
                         case 39:
                             if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
                                 top = 0;
@@ -118,7 +121,7 @@ $(document).ready(function(){
             },
 
             reorder: function(ring){
-                var x,y;
+                var x, y, lastRing;
                 switch (this.detectDirection()) {
                     case 'up':
                         x = 0;
@@ -138,9 +141,9 @@ $(document).ready(function(){
                 }
                 var snakeLength = this.snake.length;
                 if (snakeLength) {
-                    var lastRing = this.snake[snakeLength-1].position();
+                    lastRing = this.snake[snakeLength-1].position();
                 } else {
-                    var lastRing = {
+                    lastRing = {
                         left: parseInt((this.stage.width() - this.configs.width*2)/2),
                         top: parseInt((this.stage.height() - this.configs.height*2)/2)
                     };
