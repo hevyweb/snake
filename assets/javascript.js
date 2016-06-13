@@ -11,7 +11,13 @@ $(document).ready(function(){
 
             configs: {
                 width: 20,
-                height: 20
+                height: 20,
+                sector: {
+                    colls: 4,
+                    rows: 3,
+                    width: null,
+                    height: null
+                }
             },
             
             direction: {
@@ -20,10 +26,12 @@ $(document).ready(function(){
             },
             
             lastKeyCode: 38,
+            
+            lastSector: 0,
 
             init: function(){
                 $('body').html('');
-                $(window).keydown(this.setEventListeners(this));
+                $(window).keyup(this.setEventListeners(this));
                 this.buildStage();
             },
 
@@ -71,10 +79,9 @@ $(document).ready(function(){
             },
             
             buildStage: function (){
-                this.stage = $('<div class="stage" />').css({
-                    'height': parseInt($(window).height()/2),
-                    'margin-top': parseInt($(window).height()/4)
-                }).appendTo('body');
+                var height = parseInt($(window).height()/2);
+                var width = parseInt($(window).width()/2);
+                this.stage = $('<div class="stage" />').css(this.resizeStage(height, width)).appendTo('body');
                 var self = this;
                 $('<div class="startBtn">Go!</div>').appendTo(this.stage).click(function(){
                     $(this).animate({
@@ -89,11 +96,23 @@ $(document).ready(function(){
                     });
                 });
             },
+            
+            resizeStage: function(height, width) {
+                this.configs.sector.width = Math.floor(Math.floor(width/this.configs.width)*this.configs.width/this.configs.sector.colls);
+                this.configs.sector.height = Math.floor(Math.floor(height/this.configs.height)*this.configs.height/this.configs.sector.rows);
+                this.configs.sector.horizontalCells = this.configs.sector.width/this.configs.width;
+                this.configs.sector.verticalCells = this.configs.sector.height/this.configs.height;
+                return {
+                    'width': this.configs.sector.width * this.configs.sector.colls,
+                    'height': this.configs.sector.height * this.configs.sector.rows
+                }
+            },
 
             startTheGame: function(){
                 this.addRing(4);
                 var self = this;
                 this.engine = setInterval(function(){self.run()}, 500);
+                setTimeout(function(){self.appearDot()}, 1500)
             },
             
             stopTheGame: function(){
@@ -114,6 +133,9 @@ $(document).ready(function(){
                 }
                 for (;n>0;n--) {
                     ring = this.ring.clone();
+                    if (!this.snake.length) {
+                        ring.addClass('head')
+                    }
                     this.stage.append(ring);
                     this.reorder(ring);
                     this.snake.push(ring);
@@ -215,10 +237,29 @@ $(document).ready(function(){
 
                     ring.css(newPosition);
                     lastPosition = ringPosition;
+                    if (stopTheGame){
+                        break
+                    }
                 }
                 if (stopTheGame) {
                     this.stopTheGame();
                 }   
+            },
+            
+            appearDot: function(){
+                var sector = this.lastSector;
+                while(sector === this.lastSector) {
+                    sector = Math.ceil(Math.random() * this.configs.sector.rows * this.configs.sector.colls);
+                }
+                var row = Math.ceil(sector/this.configs.sector.colls);
+                var coll = sector%this.configs.sector.colls ? sector%this.configs.sector.colls : this.configs.sector.colls;
+                $('<div class="ring"></div>')
+                    .css({
+                        'top': row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells)*this.configs.height,
+                        'left': coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells)*this.configs.width
+                    })
+                    .appendTo(this.stage);
+                
             }
         };
     };

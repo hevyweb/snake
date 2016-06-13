@@ -3,7 +3,9 @@
     top: 25%;
     margin: auto;
     border: 10px solid silver;
+    box-sizing: initial;
     position: relative;
+    margin-top: 200px;
 }
 
 .startBtn {
@@ -30,4 +32,9 @@
     border: 2px solid #003366;
     position: absolute;
     box-sizing: border-box
+}
+
+.head {
+    background: #009933;
+    z-index: 2;
 }
