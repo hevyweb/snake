@@ -6,6 +6,8 @@
     box-sizing: initial;
     position: relative;
     margin-top: 200px;
+    background-image: repeating-linear-gradient(transparent, transparent 19px, silver 20px),
+        repeating-linear-gradient(90deg, transparent, transparent 19px, silver 20px);
 }
 
 .startBtn {

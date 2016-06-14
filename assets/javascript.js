@@ -8,6 +8,8 @@ $(document).ready(function(){
             ring: null,
             
             engine: null,
+            
+            dotPosition: null,
 
             configs: {
                 width: 20,
@@ -34,8 +36,6 @@ $(document).ready(function(){
                 $(window).keyup(this.setEventListeners(this));
                 this.buildStage();
             },
-
-
 
             setEventListeners: function (self){
                 return function(e){
@@ -98,10 +98,11 @@ $(document).ready(function(){
             },
             
             resizeStage: function(height, width) {
-                this.configs.sector.width = Math.floor(Math.floor(width/this.configs.width)*this.configs.width/this.configs.sector.colls);
-                this.configs.sector.height = Math.floor(Math.floor(height/this.configs.height)*this.configs.height/this.configs.sector.rows);
+                this.configs.sector.width = Math.floor(Math.floor(width/this.configs.width)/this.configs.sector.colls)*this.configs.width;
+                this.configs.sector.height = Math.floor(Math.floor(height/this.configs.height)/this.configs.sector.rows)*this.configs.height;
                 this.configs.sector.horizontalCells = this.configs.sector.width/this.configs.width;
                 this.configs.sector.verticalCells = this.configs.sector.height/this.configs.height;
+
                 return {
                     'width': this.configs.sector.width * this.configs.sector.colls,
                     'height': this.configs.sector.height * this.configs.sector.rows
@@ -166,8 +167,8 @@ $(document).ready(function(){
                     lastRing = this.snake[snakeLength-1].position();
                 } else {
                     lastRing = {
-                        left: parseInt((this.stage.width() - this.configs.width*2)/2),
-                        top: parseInt((this.stage.height() - this.configs.height*2)/2)
+                        left: Math.floor(this.configs.sector.horizontalCells*this.configs.sector.colls/2)*this.configs.width,
+                        top: Math.floor(this.configs.sector.verticalCells*this.configs.sector.rows/2)*this.configs.height
                     };
                 }
 
@@ -214,22 +215,12 @@ $(document).ready(function(){
                             'left' : ringPosition.left + this.direction.left,
                             'top' : ringPosition.top + this.direction.top
                         };
-                        if (newPosition.left<0){
-                            newPosition.left = 0;
-                            stopTheGame = true;
-                        }
-                        
-                        if (newPosition.top<0) {
-                            newPosition.top = 0;
-                            stopTheGame = true;
-                        }
-                        
-                        if (newPosition.top+this.configs.height > this.stage.height()){
-                            newPosition.top = this.stage.height() - this.configs.height;
-                            stopTheGame = true;
-                        }
-                        
-                        if (newPosition.left+this.configs.width > this.stage.width()){
+                        if (
+                            newPosition.left<=0 || 
+                            newPosition.top<=0 || 
+                            newPosition.top+this.configs.height >= this.stage.height() || 
+                            newPosition.left+this.configs.width >= this.stage.width()
+                        ){
                             newPosition.left = this.stage.width() - this.configs.width;
                             stopTheGame = true;
                         }
@@ -237,13 +228,12 @@ $(document).ready(function(){
 
                     ring.css(newPosition);
                     lastPosition = ringPosition;
-                    if (stopTheGame){
-                        break
-                    }
                 }
                 if (stopTheGame) {
                     this.stopTheGame();
-                }   
+                }
+                
+                this.eatDot(newPosition);
             },
             
             appearDot: function(){
@@ -251,14 +241,38 @@ $(document).ready(function(){
                 while(sector === this.lastSector) {
                     sector = Math.ceil(Math.random() * this.configs.sector.rows * this.configs.sector.colls);
                 }
-                var row = Math.ceil(sector/this.configs.sector.colls);
-                var coll = sector%this.configs.sector.colls ? sector%this.configs.sector.colls : this.configs.sector.colls;
-                $('<div class="ring"></div>')
+                var row = Math.floor(sector/this.configs.sector.colls);
+                var coll = sector%this.configs.sector.colls;
+                var top = row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells)*this.configs.height;
+                var left = coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells)*this.configs.width;
+                for (var l = this.snake.length - 1; l >= 0; l--){
+                    var position = $(this.snake[l]).position();
+                    if (position.top === top || position.left === left) {
+                        return this.appearDor();
+                    }
+                }
+                return $('<div class="ring dot"></div>')
                     .css({
-                        'top': row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells)*this.configs.height,
-                        'left': coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells)*this.configs.width
+                        'top': top,
+                        'left': left
                     })
                     .appendTo(this.stage);
+                
+            },
+            
+            eatDot: function(headPosition){
+                if (!$('.dot').length) {
+                    return;
+                }
+                if (this.dotPosition == null) {
+                    this.dotPosition = $('.dot').position();
+                }
+
+                if (this.dotPosition.top == headPosition.top && this.dotPosition.left == headPosition.left){
+                    this.dotPosition = null;
+                    this.snake.push($('.dot').removeClass('dot'));
+                    this.appearDot();
+                }
                 
             }
         };
