@@ -40,3 +40,7 @@
     background: #009933;
     z-index: 2;
 }
+
+.dot{
+    z-index: 3;
+}

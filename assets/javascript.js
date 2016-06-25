@@ -75,7 +75,7 @@ $(document).ready(function(){
                         };
                         self.restartTheEngine();
                     }
-                }
+                };
             },
             
             buildStage: function (){
@@ -106,14 +106,14 @@ $(document).ready(function(){
                 return {
                     'width': this.configs.sector.width * this.configs.sector.colls,
                     'height': this.configs.sector.height * this.configs.sector.rows
-                }
+                };
             },
 
             startTheGame: function(){
                 this.addRing(4);
                 var self = this;
-                this.engine = setInterval(function(){self.run()}, 500);
-                setTimeout(function(){self.appearDot()}, 1500)
+                this.engine = setInterval(function(){self.run();}, 500);
+                setTimeout(function(){self.appearDot();}, 1500);
             },
             
             stopTheGame: function(){
@@ -124,7 +124,8 @@ $(document).ready(function(){
             restartTheEngine: function(){
                 clearInterval(this.engine);
                 var self = this;
-                this.engine = setInterval(function(){self.run()}, 500);
+                self.run();
+                this.engine = setInterval(function(){self.run();}, 500);
             },
 
             addRing: function(n){
@@ -135,9 +136,12 @@ $(document).ready(function(){
                 for (;n>0;n--) {
                     ring = this.ring.clone();
                     if (!this.snake.length) {
-                        ring.addClass('head')
+                        ring.addClass('head');
+                    } else if (n === 1) {
+                        ring.addClass('tail');
                     }
                     this.stage.append(ring);
+                    this.reorder(ring);
                     this.reorder(ring);
                     this.snake.push(ring);
                 }
@@ -203,7 +207,7 @@ $(document).ready(function(){
             },
             
             run: function(){
-                var ring, ringPosition, lastPosition, newPosition, stopTheGame = 0;
+                var ring, ringPosition, lastPosition, newPosition, movingRing;
                 for(var n = 0, l = this.snake.length; n<l; n++)
                 {
                     ring = this.snake[n];
@@ -215,31 +219,42 @@ $(document).ready(function(){
                             'left' : ringPosition.left + this.direction.left,
                             'top' : ringPosition.top + this.direction.top
                         };
-                        if (
-                            newPosition.left<=0 || 
-                            newPosition.top<=0 || 
-                            newPosition.top+this.configs.height >= this.stage.height() || 
-                            newPosition.left+this.configs.width >= this.stage.width()
-                        ){
-                            newPosition.left = this.stage.width() - this.configs.width;
-                            stopTheGame = true;
+                        if (ring.hasClass('head') && this.checkValidPosition(newPosition)){
+                            return this.stopTheGame();
                         }
+                        
                     }
 
                     ring.css(newPosition);
                     lastPosition = ringPosition;
                 }
-                if (stopTheGame) {
-                    this.stopTheGame();
-                }
                 
                 this.eatDot(newPosition);
+            },
+            
+            checkValidPosition: function(newPosition){
+                if (
+                    newPosition.left<0 || 
+                    newPosition.top<0 || 
+                    newPosition.top+this.configs.height > this.stage.height() || 
+                    newPosition.left+this.configs.width > this.stage.width()
+                ){
+                    return true;
+                } else {
+                    for(var l = this.snake.length-1;l>0;l--){
+                        movingRing = this.snake[l].position();
+                        if (newPosition.left === movingRing.left && newPosition.top === movingRing.top) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             },
             
             appearDot: function(){
                 var sector = this.lastSector;
                 while(sector === this.lastSector) {
-                    sector = Math.ceil(Math.random() * this.configs.sector.rows * this.configs.sector.colls);
+                    sector = Math.ceil(Math.random() * (this.configs.sector.rows * this.configs.sector.colls - 1));
                 }
                 var row = Math.floor(sector/this.configs.sector.colls);
                 var coll = sector%this.configs.sector.colls;
@@ -248,7 +263,7 @@ $(document).ready(function(){
                 for (var l = this.snake.length - 1; l >= 0; l--){
                     var position = $(this.snake[l]).position();
                     if (position.top === top || position.left === left) {
-                        return this.appearDor();
+                        return this.appearDot();
                     }
                 }
                 return $('<div class="ring dot"></div>')
@@ -257,20 +272,28 @@ $(document).ready(function(){
                         'left': left
                     })
                     .appendTo(this.stage);
+            },
+            
+            moveToTheTail: function(){
                 
             },
             
             eatDot: function(headPosition){
-                if (!$('.dot').length) {
+                var $dot = $('.dot');
+                if (!$dot.length) {
                     return;
                 }
-                if (this.dotPosition == null) {
-                    this.dotPosition = $('.dot').position();
+                if (this.dotPosition === null) {
+                    this.dotPosition = $dot.position();
                 }
 
-                if (this.dotPosition.top == headPosition.top && this.dotPosition.left == headPosition.left){
+                if (this.dotPosition.top === headPosition.top && this.dotPosition.left === headPosition.left){
                     this.dotPosition = null;
-                    this.snake.push($('.dot').removeClass('dot'));
+                    this.reorder($dot);
+                    this.snake.push($dot.removeClass('dot'));
+                    $dot.css('background-color', 'red').animate({'backgroundColor': '#00637F'}, 300);
+                    console.log(this.snake);
+                    this.stopTheGame();
                     this.appearDot();
                 }
                 
