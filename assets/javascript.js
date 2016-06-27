@@ -9,6 +9,12 @@ $(document).ready(function(){
             
             engine: null,
             
+            speed: 500,
+            
+            maxSpeed: 50,
+            
+            speedStep: null,
+            
             dotPosition: null,
 
             configs: {
@@ -32,9 +38,11 @@ $(document).ready(function(){
             lastSector: 0,
 
             init: function(){
+                
                 $('body').html('');
                 $(window).keyup(this.setEventListeners(this));
                 this.buildStage();
+                this.speedStep = parseInt(this.configs.sector.horizontalCells*this.configs.sector.verticalCells/Math.PI);
             },
 
             setEventListeners: function (self){
@@ -112,8 +120,8 @@ $(document).ready(function(){
             startTheGame: function(){
                 this.addRing(4);
                 var self = this;
-                this.engine = setInterval(function(){self.run();}, 500);
-                setTimeout(function(){self.appearDot();}, 1500);
+                this.engine = setInterval(function(){self.run();}, this.speed);
+                setTimeout(function(){self.appearDot();}, 500);
             },
             
             stopTheGame: function(){
@@ -125,7 +133,7 @@ $(document).ready(function(){
                 clearInterval(this.engine);
                 var self = this;
                 self.run();
-                this.engine = setInterval(function(){self.run();}, 500);
+                this.engine = setInterval(function(){self.run();}, this.speed);
             },
 
             addRing: function(n){
@@ -137,11 +145,8 @@ $(document).ready(function(){
                     ring = this.ring.clone();
                     if (!this.snake.length) {
                         ring.addClass('head');
-                    } else if (n === 1) {
-                        ring.addClass('tail');
                     }
                     this.stage.append(ring);
-                    this.reorder(ring);
                     this.reorder(ring);
                     this.snake.push(ring);
                 }
@@ -207,8 +212,8 @@ $(document).ready(function(){
             },
             
             run: function(){
-                var ring, ringPosition, lastPosition, newPosition, movingRing;
-                for(var n = 0, l = this.snake.length; n<l; n++)
+                var ring, ringPosition, lastPosition, newPosition;
+                for(var n = 0; n<this.snake.length; n++)
                 {
                     ring = this.snake[n];
                     ringPosition = ring.position();
@@ -219,17 +224,16 @@ $(document).ready(function(){
                             'left' : ringPosition.left + this.direction.left,
                             'top' : ringPosition.top + this.direction.top
                         };
-                        if (ring.hasClass('head') && this.checkValidPosition(newPosition)){
+                        if (this.checkValidPosition(newPosition)){
                             return this.stopTheGame();
                         }
-                        
+                
+                        this.eatDot(newPosition);
                     }
 
                     ring.css(newPosition);
                     lastPosition = ringPosition;
                 }
-                
-                this.eatDot(newPosition);
             },
             
             checkValidPosition: function(newPosition){
@@ -253,19 +257,23 @@ $(document).ready(function(){
             
             appearDot: function(){
                 var sector = this.lastSector;
-                while(sector === this.lastSector) {
-                    sector = Math.ceil(Math.random() * (this.configs.sector.rows * this.configs.sector.colls - 1));
-                }
-                var row = Math.floor(sector/this.configs.sector.colls);
-                var coll = sector%this.configs.sector.colls;
-                var top = row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells)*this.configs.height;
-                var left = coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells)*this.configs.width;
-                for (var l = this.snake.length - 1; l >= 0; l--){
-                    var position = $(this.snake[l]).position();
-                    if (position.top === top || position.left === left) {
-                        return this.appearDot();
+                do {
+                    var wrongPosition = false;
+                    while(sector === this.lastSector) {
+                        sector = Math.ceil(Math.random() * (this.configs.sector.rows * this.configs.sector.colls - 1));
                     }
-                }
+                    var row = Math.floor(sector/this.configs.sector.colls);
+                    var coll = sector%this.configs.sector.colls;
+                    var top = row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells)*this.configs.height;
+                    var left = coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells)*this.configs.width;
+                    for (var l = this.snake.length - 1; l >= 0; l--){
+                        var position = $(this.snake[l]).position();
+                        if (position.top === top || position.left === left) {
+                            wrongPosition = true;
+                        }
+                    }
+                } while(wrongPosition);
+                
                 return $('<div class="ring dot"></div>')
                     .css({
                         'top': top,
@@ -279,24 +287,25 @@ $(document).ready(function(){
             },
             
             eatDot: function(headPosition){
-                var $dot = $('.dot');
-                if (!$dot.length) {
+                var dot = $('.dot');
+                if (!dot.length) {
                     return;
                 }
                 if (this.dotPosition === null) {
-                    this.dotPosition = $dot.position();
+                    this.dotPosition = dot.position();
                 }
 
                 if (this.dotPosition.top === headPosition.top && this.dotPosition.left === headPosition.left){
                     this.dotPosition = null;
-                    this.reorder($dot);
-                    this.snake.push($dot.removeClass('dot'));
-                    $dot.css('background-color', 'red').animate({'backgroundColor': '#00637F'}, 300);
-                    console.log(this.snake);
-                    this.stopTheGame();
+                    dot.removeClass('dot');
+                    this.snake.push(dot);
                     this.appearDot();
-                }
-                
+                    
+                    if (this.speed - this.speedStep >= this.maxSpeed) {
+                        this.speed -= this.speedStep;
+                    }
+                    console.log(this.speed);
+                }                
             }
         };
     };

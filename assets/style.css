@@ -43,4 +43,6 @@
 
 .dot{
     z-index: 3;
+    background: repeating-linear-gradient(#FB4B4D, #FC5984);
+    border: 2px solid #612233;
 }
