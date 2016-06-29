@@ -18,11 +18,12 @@ $(document).ready(function() {
                 'left': 0
             },
             lastKeyCode: 38,
-            lastSector: 0,
-            init: function() {
+            availableCells: [],
+            init: function(place) {
                 $('body').html('');
                 $(window).keyup(this.setEventListeners(this));
                 this.buildStage();
+                this.loadAvailableCells();
                 this.speedStep = parseInt(this.configs.sector.horizontalCells * this.configs.sector.verticalCells / Math.PI);
             },
             setEventListeners: function(self) {
@@ -91,7 +92,7 @@ $(document).ready(function() {
 
                 return {
                     'width': verticalCells * this.configs.width,
-                    'height': horizontalCells * this.configs.width
+                    'height': horizontalCells * this.configs.height
                 };
             },
             startTheGame: function() {
@@ -289,6 +290,24 @@ $(document).ready(function() {
                     }
                     console.log(this.speed);
                 }
+            },
+            loadAvailableCells: function() {
+                var x = 0;
+                var y;
+                var width = this.stage.width();
+                var height = this.stage.height();
+                while(x < width){
+                    y = 0;
+                    while(y < height){
+                        this.availableCells.push({
+                            top: x,
+                            left: y
+                        });
+                        y +=this.configs.height;
+                    }
+                    x += this.configs.width;
+                }
+                console.log(this.availableCells);
             }
         };
     };
