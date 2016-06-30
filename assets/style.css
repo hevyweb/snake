@@ -1,6 +1,10 @@
+#placeToInsert{
+    width: 200px;
+    height: 200px;
+    display: block;
+}
+
 .stage {
-    width: 50%;
-    top: 25%;
     margin: auto;
     border: 10px solid silver;
     box-sizing: initial;

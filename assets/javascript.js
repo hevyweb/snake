@@ -9,9 +9,13 @@ $(document).ready(function() {
             maxSpeed: 50,
             speedStep: null,
             dotPosition: null,
-            configs: {
+            cell: {
                 width: 20,
                 height: 20
+            },
+            stageSize: {
+                width: null,
+                height: null
             },
             direction: {
                 'top': -20,
@@ -20,11 +24,10 @@ $(document).ready(function() {
             lastKeyCode: 38,
             availableCells: [],
             init: function(place) {
-                $('body').html('');
                 $(window).keyup(this.setEventListeners(this));
-                this.buildStage();
+                this.buildStage(place);
                 this.loadAvailableCells();
-                this.speedStep = parseInt(this.configs.sector.horizontalCells * this.configs.sector.verticalCells / Math.PI);
+                this.speedStep = parseInt(this.totalCells / Math.PI);
             },
             setEventListeners: function(self) {
                 return function(e) {
@@ -32,26 +35,26 @@ $(document).ready(function() {
                     switch (e.keyCode) {
                         case 38:
                             if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
-                                top = -1 * self.configs.height;
+                                top = -1 * self.cell.height;
                                 left = 0;
                             }
                             break;
                         case 37:
                             if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
                                 top = 0;
-                                left = -1 * self.configs.width;
+                                left = -1 * self.cell.width;
                             }
                             break;
                         case 40:
                             if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
-                                top = self.configs.height;
+                                top = self.cell.height;
                                 left = 0;
                             }
                             break;
                         case 39:
                             if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
                                 top = 0;
-                                left = self.configs.width;
+                                left = self.cell.width;
                             }
                             break;
                     }
@@ -66,10 +69,10 @@ $(document).ready(function() {
                     }
                 };
             },
-            buildStage: function() {
-                var height = parseInt($(window).height() / 2);
-                var width = parseInt($(window).width() / 2);
-                this.stage = $('<div class="stage" />').css(this.resizeStage(height, width)).appendTo('body');
+            buildStage: function(place) {
+                var height = $(place).height();
+                var width = $(place).width();
+                this.stage = $('<div class="stage" />').css(this.resizeStage(height, width)).appendTo(place);
                 var self = this;
                 $('<div class="startBtn">Go!</div>').appendTo(this.stage).click(function() {
                     $(this).animate({
@@ -85,15 +88,15 @@ $(document).ready(function() {
                 });
             },
             resizeStage: function(height, width) {
-                var horizontalCells = Math.floor(width / this.configs.width);
-                var verticalCells = Math.floor(height / this.configs.height);
-
+                var horizontalCells = Math.floor(width / this.cell.width);
+                var verticalCells = Math.floor(height / this.cell.height);
                 this.totalCells = horizontalCells * verticalCells;
-
-                return {
-                    'width': verticalCells * this.configs.width,
-                    'height': horizontalCells * this.configs.height
+                this.stageSize = {
+                    width: horizontalCells * this.cell.width,
+                    height: verticalCells * this.cell.height
                 };
+
+                return this.stageSize;
             },
             startTheGame: function() {
                 this.addRing(4);
@@ -134,27 +137,27 @@ $(document).ready(function() {
                 switch (this.detectDirection()) {
                     case 'up':
                         x = 0;
-                        y = -1 * this.configs.height;
+                        y = -1 * this.cell.height;
                         break;
                     case 'left':
-                        x = -1 * this.configs.width;
+                        x = -1 * this.cell.width;
                         y = 0;
                         break;
                     case 'right':
-                        x = this.configs.width;
+                        x = this.cell.width;
                         y = 0;
                         break;
                     default:
                         x = 0;
-                        y = this.configs.height;
+                        y = this.cell.height;
                 }
                 var snakeLength = this.snake.length;
                 if (snakeLength) {
                     lastRing = this.snake[snakeLength - 1].position();
                 } else {
                     lastRing = {
-                        left: Math.floor(this.configs.sector.horizontalCells * this.configs.sector.colls / 2) * this.configs.width,
-                        top: Math.floor(this.configs.sector.verticalCells * this.configs.sector.rows / 2) * this.configs.height
+                        left: Math.floor(parseInt(this.stageSize.width/2) / this.cell.width) * this.cell.width,
+                        top: Math.floor(parseInt(this.stageSize.height/2) / this.cell.height) * this.cell.height
                     };
                 }
 
@@ -214,8 +217,8 @@ $(document).ready(function() {
                 if (
                         newPosition.left < 0 ||
                         newPosition.top < 0 ||
-                        newPosition.top + this.configs.height > this.stage.height() ||
-                        newPosition.left + this.configs.width > this.stage.width()
+                        newPosition.top + this.cell.height > this.stage.height() ||
+                        newPosition.left + this.cell.width > this.stage.width()
                         ) {
                     return true;
                 } else {
@@ -229,41 +232,11 @@ $(document).ready(function() {
                 return false;
             },
             appearDot: function() {
-                console.log("started appearDot");
-                var sector = this.lastSector,
-                        wrongPosition = false,
-                        loop = 0;
-                do {
-                    console.log('doloop');
-                    wrongPosition = false;
-                    loop = 0;
-                    do {
-                        console.log('whileloop');
-                        sector = Math.ceil(Math.random() * (this.configs.sector.rows * this.configs.sector.colls - 1));
-                        if (loop > 10) {
-                            break;
-                        }
-                        loop++;
-                    } while (sector === this.lastSector);
-                    var row = Math.floor(sector / this.configs.sector.colls);
-                    var coll = sector % this.configs.sector.colls;
-                    var top = row * this.configs.sector.height + Math.floor(Math.random() * this.configs.sector.verticalCells) * this.configs.height;
-                    var left = coll * this.configs.sector.width + Math.floor(Math.random() * this.configs.sector.horizontalCells) * this.configs.width;
-                    for (var l = this.snake.length - 1; l >= 0; l--) {
-                        console.log('forloop');
-                        var position = $(this.snake[l]).position();
-                        if (position.top === top || position.left === left) {
-                            wrongPosition = true;
-                        }
-                    }
-                } while (wrongPosition);
-                console.log('completed appearDot');
+                var index = parseInt(Math.random() * (this.availableCells.lenth -1));
+                
                 return this.ring.clone().addClass('dot')
-                        .css({
-                            'top': top,
-                            'left': left
-                        })
-                        .appendTo(this.stage);
+                    .css(this.availableCells.slice(index, 1))
+                    .appendTo(this.stage);
             },
             moveToTheTail: function() {
 
@@ -296,21 +269,21 @@ $(document).ready(function() {
                 var y;
                 var width = this.stage.width();
                 var height = this.stage.height();
-                while(x < width){
+                while (x < width) {
                     y = 0;
-                    while(y < height){
+                    while (y < height) {
                         this.availableCells.push({
                             top: x,
                             left: y
                         });
-                        y +=this.configs.height;
+                        y += this.cell.height;
                     }
-                    x += this.configs.width;
+                    x += this.cell.width;
                 }
                 console.log(this.availableCells);
             }
         };
     };
     var game = new Snake();
-    game.init();
+    game.init($('#placeToInsert'));
 });
