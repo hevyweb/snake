@@ -74,19 +74,39 @@ $(document).ready(function() {
                 var width = $(place).width();
                 this.stage = $('<div class="stage" />').css(this.resizeStage(height, width)).appendTo(place);
                 var self = this;
-                $('<div class="startBtn">Go!</div>').appendTo(this.stage).click(function() {
-                    $(this).animate({
-                        opacity: 0,
-                        height: 0,
-                        width: 0,
-                        "line-height": 0,
-                        "font-size": 0
-                    }, 400, function() {
-                        $(this).remove();
-                        self.startTheGame();
-                    });
-                });
+                this.buildStartUpScreen().appendTo(this.stage);
             },
+            
+            buildStartUpScreen: function(){
+                var self = this;
+                return $('<div />')
+                .css({
+                    width: this.stage.width(), 
+                    height: this.stage.height(),
+                    background: '#ffffff'
+                })
+                .append($('<div class="gameName" />').html('Snake'))
+                .append($('<div class="heightScore" />').html('HI score: ' + this.getHighScore()))
+                .append($('<button class="playButton" />').html('Play').click(function(){
+                    $(this).parent().remove();
+                    self.startTheGame();
+                }));
+            },
+            
+            getHighScore: function(){
+                var matches = document.cookie.match(new RegExp(
+                  "(?:^|; )score=([^;]*)"
+                ));
+                return matches ? decodeURIComponent(matches[1]) : 0;
+            },
+            
+            setHighScore: function(){
+                var highScore = this.snake.length;
+                if (highScore > this.getHighScore()) {
+                    document.cookie = 'score=' + this.snake.length;
+                }
+            },
+            
             resizeStage: function(height, width) {
                 var horizontalCells = Math.floor(width / this.cell.width);
                 var verticalCells = Math.floor(height / this.cell.height);
@@ -110,6 +130,7 @@ $(document).ready(function() {
             },
             stopTheGame: function() {
                 clearInterval(this.engine);
+                this.setHighScore();
                 alert('You loose');
             },
             restartTheEngine: function() {
@@ -191,12 +212,16 @@ $(document).ready(function() {
             },
             run: function() {
                 var ring, ringPosition, lastPosition, newPosition;
-                for (var n = 0; n < this.snake.length; n++)
+                var snakeSize = this.snake.length-1;
+                for (var n = 0; n <= snakeSize; n++)
                 {
                     ring = this.snake[n];
                     ringPosition = ring.position();
                     if (n) {
                         newPosition = lastPosition;
+                        if (n == snakeSize){
+                            this.addPosition(ringPosition);
+                        }
                     } else {
                         newPosition = {
                             'left': ringPosition.left + this.direction.left,
@@ -205,6 +230,8 @@ $(document).ready(function() {
                         if (this.checkValidPosition(newPosition)) {
                             return this.stopTheGame();
                         }
+                        
+                        this.removePosition(newPosition);
 
                         this.eatDot(newPosition);
                     }
@@ -232,11 +259,12 @@ $(document).ready(function() {
                 return false;
             },
             appearDot: function() {
-                var index = parseInt(Math.random() * (this.availableCells.lenth -1));
-                
-                return this.ring.clone().addClass('dot')
-                    .css(this.availableCells.slice(index, 1))
-                    .appendTo(this.stage);
+                var index = parseInt(Math.random() * (this.availableCells.length - 1));
+                this.availableCells.slice(index, 1);
+                var cell = this.availableCells[index]
+                var ring = this.ring.clone().addClass('dot');
+                ring.css(cell);
+                return ring.appendTo(this.stage);
             },
             moveToTheTail: function() {
 
@@ -280,7 +308,15 @@ $(document).ready(function() {
                     }
                     x += this.cell.width;
                 }
-                console.log(this.availableCells);
+            },
+            
+            removePosition: function(cell) {
+                var index = this.availableCells.indexOf(cell);
+                this.availableCells.slice(index, 1);
+            },
+            
+            addPosition: function(cell) {
+                this.availableCells.push(cell);
             }
         };
     };
