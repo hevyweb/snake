@@ -26,9 +26,21 @@ $(document).ready(function() {
             init: function(place) {
                 $(window).keyup(this.setEventListeners(this));
                 this.buildStage(place);
+                this.tearDown();
+            },
+            
+            tearDown: function(){
+                this.direction = {
+                    'top': -20,
+                    'left': 0
+                };
+                this.availableCells = [];
+                this.speed = 500;
+                this.snake = [];
                 this.loadAvailableCells();
                 this.speedStep = parseInt(this.totalCells / Math.PI);
             },
+            
             setEventListeners: function(self) {
                 return function(e) {
                     var top, left;
@@ -93,6 +105,23 @@ $(document).ready(function() {
                 }));
             },
             
+            buildGameOverStage: function(){
+                var self = this;
+                return $('<div />')
+                .css({
+                    width: this.stage.width(), 
+                    height: this.stage.height(),
+                    background: '#ffffff'
+                })
+                .append($('<div class="gameOver" />').html('Game Over'))
+                .append($('<div class="heightScore" />').html('HI score: ' + this.getHighScore()))
+                .append($('<button class="playAgainButton" />').html('Try again').click(function(){
+                    $(this).parent().remove();
+                    self.tearDown();
+                    self.startTheGame();
+                }));
+            },
+            
             getHighScore: function(){
                 var matches = document.cookie.match(new RegExp(
                   "(?:^|; )score=([^;]*)"
@@ -131,7 +160,8 @@ $(document).ready(function() {
             stopTheGame: function() {
                 clearInterval(this.engine);
                 this.setHighScore();
-                alert('You loose');
+                $(window).unbind('keyup');
+                $(this.stage).html('').append(this.buildGameOverStage())
             },
             restartTheEngine: function() {
                 clearInterval(this.engine);

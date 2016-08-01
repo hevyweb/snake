@@ -63,6 +63,17 @@
     text-shadow: -1px 0 #6C7476, 0 3px #6C7476, 1px 0 #6C7476, 0px -1px #6C7476;
 }
 
+.gameOver{
+    text-align: center;
+    line-height: 70px;
+    font-size: 35px;
+    letter-spacing: -4px;
+    font-weight: bold;
+    font-family: verdana;
+    color: #EE3233;
+    text-shadow: -1px 0 #612233, 0 3px #612233, 1px 0 #612233, 0px -1px #612233;    
+}
+
 .heightScore{
     text-align: center;
     font-family: monospace;
@@ -81,18 +92,53 @@
     text-shadow: -1px 0 #6C7476, 0 2px #6C7476, 1px 0 #6C7476, 0px -1px #6C7476;
     letter-spacing: -1px;
     cursor: pointer;
-    padding-left: 27px;
 }
 
 .playButton:after{
-    content: "\25B6";
+    content: "\f04b";
+    margin-left: 6px;
+    padding-left: 6px;
+    color: #EE3233;
+    text-shadow: none;
+    display: inline-block;
+    background: green;
+    border-radius: 100%;
+    font-size: 25px;
+    line-height: 40px;
+    letter-spacing: 0;
+    text-align: center;
+    height: 40px;
+    width: 34px;
+    vertical-align: middle;
+    background: radial-gradient(#CEEBFB, #A3D6F5, #66A7C5);
+    border: 1px solid #6C7476;
+    text-shadow: -1px 0 #F0ECEB, 0 2px #F0ECEB, 1px 0 #F0ECEB, 0px -1px #F0ECEB;
+    font-family: AwesomeFont;
+}
+
+.playAgainButton{
+    margin: 20px auto 0 auto;
+    display: inherit;
+    background: none;
+    border: none;
+    font-family: verdana;
+    font-weight: bold;
+    font-size: 24px;
+    color: #CEEBFB;
+    text-shadow: -1px 0 #6C7476, 0 2px #6C7476, 1px 0 #6C7476, 0px -1px #6C7476;
+    letter-spacing: -1px;
+    cursor: pointer;
+}
+
+.playAgainButton:after{
+    content: "\f01e";
     margin-left: 6px;
     color: #EE3233;
     text-shadow: none;
     display: inline-block;
     background: green;
     border-radius: 100%;
-    font-size: 46px;
+    font-size: 25px;
     line-height: 40px;
     letter-spacing: 0;
     text-align: center;
@@ -102,4 +148,5 @@
     background: radial-gradient(#CEEBFB, #A3D6F5, #66A7C5);
     border: 1px solid #6C7476;
     text-shadow: -1px 0 #F0ECEB, 0 2px #F0ECEB, 1px 0 #F0ECEB, 0px -1px #F0ECEB;
+    font-family: AwesomeFont;
 }
