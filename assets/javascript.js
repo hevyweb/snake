@@ -5,7 +5,7 @@ $(document).ready(function() {
             stage: null,
             ring: $('<div class="ring"></div>'),
             engine: null,
-            speed: 500,
+            speed: null,
             maxSpeed: 50,
             speedStep: null,
             dotPosition: null,
@@ -17,28 +17,30 @@ $(document).ready(function() {
                 width: null,
                 height: null
             },
-            direction: {
-                'top': -20,
-                'left': 0
-            },
-            lastKeyCode: 38,
+            direction: {},
+            lastKeyCode: null,
             availableCells: [],
-            init: function(place) {
-                $(window).keyup(this.setEventListeners(this));
-                this.buildStage(place);
+            
+            start: function(place){
+                this.stage = this.buildStage(place).appendTo(place);
                 this.tearDown();
             },
             
             tearDown: function(){
+                $(window).keyup(this.setEventListeners(this));
+                // default direction - top
                 this.direction = {
                     'top': -20,
                     'left': 0
                 };
-                this.availableCells = [];
+                //up arrow
+                this.lastKeyCode = 38;
                 this.speed = 500;
                 this.snake = [];
+                this.availableCells = [];
                 this.loadAvailableCells();
                 this.speedStep = parseInt(this.totalCells / Math.PI);
+                this.dotPosition = null;
             },
             
             setEventListeners: function(self) {
@@ -81,26 +83,23 @@ $(document).ready(function() {
                     }
                 };
             },
+            
             buildStage: function(place) {
-                var height = $(place).height();
-                var width = $(place).width();
-                this.stage = $('<div class="stage" />').css(this.resizeStage(height, width)).appendTo(place);
-                var self = this;
-                this.buildStartUpScreen().appendTo(this.stage);
+                var size = this.resizeStage($(place).height(), $(place).width());
+                return $('<div class="stage" />').css(size).append(this.buildStartUpScreen().css(size));
             },
             
             buildStartUpScreen: function(){
                 var self = this;
                 return $('<div />')
                 .css({
-                    width: this.stage.width(), 
-                    height: this.stage.height(),
                     background: '#ffffff'
                 })
                 .append($('<div class="gameName" />').html('Snake'))
                 .append($('<div class="heightScore" />').html('HI score: ' + this.getHighScore()))
                 .append($('<button class="playButton" />').html('Play').click(function(){
                     $(this).parent().remove();
+                    $(window).on('keyup');
                     self.startTheGame();
                 }));
             },
@@ -144,7 +143,6 @@ $(document).ready(function() {
                     width: horizontalCells * this.cell.width,
                     height: verticalCells * this.cell.height
                 };
-
                 return this.stageSize;
             },
             startTheGame: function() {
@@ -296,9 +294,11 @@ $(document).ready(function() {
                 ring.css(cell);
                 return ring.appendTo(this.stage);
             },
+            
             moveToTheTail: function() {
 
             },
+            
             eatDot: function(headPosition) {
                 var dot = $('.dot');
                 if (!dot.length) {
@@ -310,16 +310,13 @@ $(document).ready(function() {
 
                 if (this.dotPosition.top === headPosition.top && this.dotPosition.left === headPosition.left) {
                     this.dotPosition = null;
-                    dot.remove();
-                    this.addRing(1);
-                    /*dot.removeClass('dot');
-                     this.snake.push(dot);
-                     */this.appearDot();
+                    dot.removeClass('dot');
+                    this.snake.push(dot);
+                    this.appearDot();
 
                     if (this.speed - this.speedStep >= this.maxSpeed) {
                         this.speed -= this.speedStep;
                     }
-                    console.log(this.speed);
                 }
             },
             loadAvailableCells: function() {
@@ -351,5 +348,5 @@ $(document).ready(function() {
         };
     };
     var game = new Snake();
-    game.init($('#placeToInsert'));
+    game.start($('#placeToInsert'));
 });
