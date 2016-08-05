@@ -39,7 +39,7 @@ $(document).ready(function() {
                 this.snake = [];
                 this.availableCells = [];
                 this.loadAvailableCells();
-                this.speedStep = parseInt(this.totalCells / Math.PI);
+                this.speedStep = parseInt(this.speed*.8/this.totalCells);
                 this.dotPosition = null;
             },
             
@@ -159,7 +159,7 @@ $(document).ready(function() {
                 clearInterval(this.engine);
                 this.setHighScore();
                 $(window).unbind('keyup');
-                $(this.stage).html('').append(this.buildGameOverStage())
+                $(this.stage).html('').append(this.buildGameOverStage());
             },
             restartTheEngine: function() {
                 clearInterval(this.engine);
@@ -286,17 +286,14 @@ $(document).ready(function() {
                 }
                 return false;
             },
+            
             appearDot: function() {
                 var index = parseInt(Math.random() * (this.availableCells.length - 1));
                 this.availableCells.slice(index, 1);
-                var cell = this.availableCells[index]
+                var cell = this.availableCells[index];
                 var ring = this.ring.clone().addClass('dot');
                 ring.css(cell);
                 return ring.appendTo(this.stage);
-            },
-            
-            moveToTheTail: function() {
-
             },
             
             eatDot: function(headPosition) {
@@ -311,7 +308,10 @@ $(document).ready(function() {
                 if (this.dotPosition.top === headPosition.top && this.dotPosition.left === headPosition.left) {
                     this.dotPosition = null;
                     dot.removeClass('dot');
+                    var last = this.snake[this.snake.length-1].position();
+                    dot.css({'top': last.top, 'left': last.left});
                     this.snake.push(dot);
+                    this.removePosition(last);
                     this.appearDot();
 
                     if (this.speed - this.speedStep >= this.maxSpeed) {
@@ -337,9 +337,10 @@ $(document).ready(function() {
                 }
             },
             
-            removePosition: function(cell) {
-                var index = this.availableCells.indexOf(cell);
-                this.availableCells.slice(index, 1);
+            removePosition: function(removeCell) {
+                this.availableCells = this.availableCells.filter(function(cell){
+                    return cell.top !== removeCell.top || cell.left !== removeCell.left;
+                });
             },
             
             addPosition: function(cell) {
