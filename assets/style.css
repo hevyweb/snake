@@ -1,15 +1,27 @@
+html, body{
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+}
+
 #placeToInsert{
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    height: 100%;
     display: block;
+    box-sizing: border-box;
 }
 
 .stage {
-    margin: auto;
+    height: 100%;
+    width: 100%;
     border: 10px solid #66A7C5;
     box-sizing: initial;
     position: relative;
-    margin-top: 200px;
     color: #6C7476;
     background-image: repeating-linear-gradient(transparent, transparent 19px, #F0ECEB 20px),
         repeating-linear-gradient(90deg, transparent, transparent 19px, #F0ECEB 20px);
@@ -54,8 +66,8 @@
 
 .gameName{
     text-align: center;
-    line-height: 70px;
-    font-size: 35px;
+    line-height: 175px;
+    font-size: 78px;
     letter-spacing: -4px;
     font-weight: bold;
     font-family: verdana;
@@ -65,8 +77,8 @@
 
 .gameOver{
     text-align: center;
-    line-height: 70px;
-    font-size: 35px;
+    line-height: 175px;
+    font-size: 78px;
     letter-spacing: -4px;
     font-weight: bold;
     font-family: verdana;

@@ -1,4 +1,3 @@
-$(document).ready(function() {
     Snake = function() {
         return {
             snake: [],
@@ -85,7 +84,7 @@ $(document).ready(function() {
             },
             
             buildStage: function(place) {
-                var size = this.resizeStage($(place).height(), $(place).width());
+                var size = this.resizeStage($(place).height() - 20, $(place).width() - 20);
                 return $('<div class="stage" />').css(size).append(this.buildStartUpScreen().css(size));
             },
             
@@ -328,8 +327,8 @@ $(document).ready(function() {
                     y = 0;
                     while (y < height) {
                         this.availableCells.push({
-                            top: x,
-                            left: y
+                            top: y,
+                            left: x
                         });
                         y += this.cell.height;
                     }
@@ -348,6 +347,3 @@ $(document).ready(function() {
             }
         };
     };
-    var game = new Snake();
-    game.start($('#placeToInsert'));
-});
