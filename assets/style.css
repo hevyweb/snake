@@ -10,8 +10,8 @@ body{
 }
 
 #placeToInsert{
-    width: 100%;
-    height: 600px;
+    width: 600px;
+    height: 500px;
     display: block;
     box-sizing: border-box;
 }
