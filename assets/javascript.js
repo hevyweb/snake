@@ -132,12 +132,12 @@
                 })
                 .append($('<div class="gameName" text="title" />').html(word.title))
                 .append($('<div class="heightScore" text="hi_score" />').html(word.hi_score + this.getHighScore()))
-                .append($('<a href="#" class="playButton" text="play" />').html(word.play).append($('<button />')).click(function(){
+                .append($('<a href="#" class="playButton" text="play" />').html(word.play).click(function(e){
                     e.preventDefault();
                     $(this).parent().remove();
                     $(window).on('keyup');
                     self.startTheGame();
-                }));
+                }).append($('<button />')));
             },
             
             buildGameOverStage: function(){
