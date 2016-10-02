@@ -2,7 +2,7 @@
         return {
             snake: [],
             stage: null,
-            ring: $('<div class="ring"></div>'),
+            ring: $('<div class="ring" />'),
             engine: null,
             speed: null,
             maxSpeed: 50,
@@ -19,6 +19,14 @@
             direction: {},
             lastKeyCode: null,
             availableCells: [],
+            keyCodes: {
+                top: 38,
+                left: 37,
+                bottom: 40,
+                right: 39
+            },
+            languages: ['ua', 'en', 'ru'],
+            currentLanguage: 'ua',
             
             start: function(place){
                 this.stage = this.buildStage(place).appendTo(place);
@@ -26,7 +34,17 @@
             },
             
             tearDown: function(){
-                $(window).keyup(this.setEventListeners(this));
+                var self = this;
+                $(this.stage).on({
+                    keyup: function(e) {
+                        e.preventDefault();
+                        self.keyListeners(e.keyCode);
+                    },
+                    click: function(e) {
+                        self.clickListener(e.offsetX);
+                    }
+                });
+                
                 // default direction - top
                 this.direction = {
                     'top': -20,
@@ -42,61 +60,80 @@
                 this.dotPosition = null;
             },
             
-            setEventListeners: function(self) {
-                return function(e) {
-                    var top, left;
-                    switch (e.keyCode) {
-                        case 38:
-                            if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
-                                top = -1 * self.cell.height;
-                                left = 0;
-                            }
-                            break;
-                        case 37:
-                            if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
-                                top = 0;
-                                left = -1 * self.cell.width;
-                            }
-                            break;
-                        case 40:
-                            if (self.lastKeyCode !== 38 && self.lastKeyCode !== 40) {
-                                top = self.cell.height;
-                                left = 0;
-                            }
-                            break;
-                        case 39:
-                            if (self.lastKeyCode !== 37 && self.lastKeyCode !== 39) {
-                                top = 0;
-                                left = self.cell.width;
-                            }
-                            break;
-                    }
-                    self.lastKeyCode = e.keyCode;
+            keyListeners: function(keyCode) {
+                var top, left;
+                switch (keyCode) {
+                    case 38:
+                        if (this.lastKeyCode !== 38 && this.lastKeyCode !== 40) {
+                            top = -1 * this.cell.height;
+                            left = 0;
+                        }
+                        break;
+                    case 37:
+                        if (this.lastKeyCode !== 37 && this.lastKeyCode !== 39) {
+                            top = 0;
+                            left = -1 * this.cell.width;
+                        }
+                        break;
+                    case 40:
+                        if (this.lastKeyCode !== 38 && this.lastKeyCode !== 40) {
+                            top = this.cell.height;
+                            left = 0;
+                        }
+                        break;
+                    case 39:
+                        if (this.lastKeyCode !== 37 && this.lastKeyCode !== 39) {
+                            top = 0;
+                            left = this.cell.width;
+                        }
+                        break;
+                }
+                this.lastKeyCode = keyCode;
 
-                    if (top || left) {
-                        self.direction = {
-                            top: top,
-                            left: left
-                        };
-                        self.restartTheEngine();
+                if (top || left) {
+                    this.direction = {
+                        top: top,
+                        left: left
+                    };
+                    this.restartTheEngine();
+                }
+            },
+            
+            clickListener: function(offsetX){
+                var keyCode;
+                if (offsetX > this.stageSize.width / 2){
+                    if (this.lastKeyCode != this.keyCodes.right){
+                        keyCode = this.keyCodes.right;
+                    } else {
+                        keyCode = this.keyCodes.bottom;
                     }
-                };
+                } else {
+                    if (this.lastKeyCode != this.keyCodes.left){
+                        keyCode = this.keyCodes.left;
+                    } else {
+                        keyCode = this.keyCodes.top;
+                    }
+                }
+
+                this.keyListeners(keyCode);
             },
             
             buildStage: function(place) {
                 var size = this.resizeStage($(place).height() - 20, $(place).width() - 20);
-                return $('<div class="stage" />').css(size).append(this.buildStartUpScreen().css(size));
+                return $('<div class="stage" tabindex="0" />').css(size).append(this.buildStartUpScreen().css(size));
             },
             
             buildStartUpScreen: function(){
                 var self = this;
+                var word = Words[self.currentLanguage];
                 return $('<div />')
                 .css({
                     background: '#ffffff'
                 })
-                .append($('<div class="gameName" />').html('Snake'))
-                .append($('<div class="heightScore" />').html('HI score: ' + this.getHighScore()))
-                .append($('<button class="playButton" />').html('Play').click(function(){
+                .append($('<div class="gameName" text="title" />').html(word.title))
+                .append($('<div class="heightScore" text="hi_score" />').html(word.hi_score + this.getHighScore()))
+                .append($('<a href="#" class="playButton" text="play" />').html(word.play).append($('<button />')).click(function(){
+                    e.preventDefault();
                     $(this).parent().remove();
                     $(window).on('keyup');
                     self.startTheGame();
@@ -105,15 +142,17 @@
             
             buildGameOverStage: function(){
                 var self = this;
+                var word = Words[self.currentLanguage];
                 return $('<div />')
                 .css({
                     width: this.stage.width(), 
                     height: this.stage.height(),
                     background: '#ffffff'
                 })
-                .append($('<div class="gameOver" />').html('Game Over'))
-                .append($('<div class="heightScore" />').html('HI score: ' + this.getHighScore()))
-                .append($('<button class="playAgainButton" />').html('Try again').click(function(){
+                .append($('<div class="gameOver" text="game_over" />').html(word.game_over))
+                .append($('<div class="heightScore" text="hi_score"/>').html(word.hi_score + this.getHighScore()))
+                .append($('<a href="#" />').append($('<button class="playAgainButton" text="try_again" />').html(word.try_again)).click(function(e){
+                    e.preventDefault();
                     $(this).parent().remove();
                     self.tearDown();
                     self.startTheGame();
@@ -344,6 +383,31 @@
             
             addPosition: function(cell) {
                 this.availableCells.push(cell);
+            },
+            
+            addControlls: function(){
+                var self = this;
+                $('<div />').addClass('controllContainer')
+                    .append($('<button />').addClass('language').click(function(){
+                        var list = $('<ul />');
+                        
+                        for (var language in self.languages){
+                            var li = $('<li />').addClass('language').html(language).click(function(){
+                                self.switchLanguage($(this).html());
+                            }).appendTo(list);
+                            if (language == self.currentLanguage) {
+                                li.addClass('currentLanguage');
+                            }
+                        }
+                    })
+                );
+            },
+            
+            switchLanguage: function(language){
+                this.currentLanguage = language;
+                this.stage.find('text').each(function(){
+                    $(this).html(Words[language][$(this).attr('text')]);
+                });
             }
         };
     };
